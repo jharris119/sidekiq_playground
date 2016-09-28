@@ -36,7 +36,7 @@ end
 class DoIt
   def self.start
     Redis.new.flushdb
-    puts "Creating 20 alphas and 5 bravos"
+    puts "Creating 40 alphas and 5 bravos"
 
     40.times do |t|
       MyWorkers::WorkerAlpha.perform_async(t)
