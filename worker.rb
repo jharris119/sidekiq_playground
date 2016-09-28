@@ -1,4 +1,5 @@
 require 'sidekiq'
+require 'sidekiq/api'   # contains Sidekiq::Queue
 require 'redis'
 
 Sidekiq.configure_client do |config|
@@ -14,6 +15,7 @@ DEFAULT_THREAD_COUNT = 25
 module MyWorkers
   class WorkerAlpha
     include Sidekiq::Worker
+    sidekiq_options queue: 'default'
 
     def perform(id)
       puts "Starting thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
@@ -24,6 +26,7 @@ module MyWorkers
 
   class WorkerBravo
     include Sidekiq::Worker
+    sidekiq_options queue: 'slow'
 
     def perform(id)
       puts "Starting thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
@@ -35,6 +38,8 @@ end
 
 class DoIt
   def self.start
+    puts "Queues: #{Sidekiq::Queue.all}"
+
     Redis.new.flushdb
     puts "Creating 40 alphas and 5 bravos"
 

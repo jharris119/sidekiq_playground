@@ -4,7 +4,7 @@ Playing with sidekiq
 ### Server side
 
 ~~~sh
-bundle exec sidekiq -r ./worker.rb
+bundle exec sidekiq -C config.yml -r ./worker.rb
 ~~~
 
 ### Then client side
