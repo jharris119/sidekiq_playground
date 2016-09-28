@@ -9,30 +9,42 @@ Sidekiq.configure_server do |config|
   config.redis = { db: 1 }
 end
 
-class OurWorker
-  include Sidekiq::Worker
+DEFAULT_THREAD_COUNT = 25
 
-  DEFAULT_THREAD_COUNT = 25
-  
-  def self.go()
-    Redis.new.flushdb
-    
-    puts "creating #{DEFAULT_THREAD_COUNT} thingies"
-    DEFAULT_THREAD_COUNT.times do |t|
-      self.perform_async(t + 1)
+module MyWorkers
+  class WorkerAlpha
+    include Sidekiq::Worker
+
+    def perform(id)
+      puts "Starting thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
+      sleep 5
+      puts "Finished thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
     end
-    puts "waiting three seconds..."
-    sleep 3
-    puts "creating 10 more thingies"
-    10.times do |t|
-      self.perform_async(t + 26)
-    end
-    puts "done!"
   end
 
-  def perform(id)
-    puts "Starting thingy #{id}"
-    sleep 5
-    puts "Finished thingy #{id}"
+  class WorkerBravo
+    include Sidekiq::Worker
+
+    def perform(id)
+      puts "Starting thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
+      sleep 5
+      puts "Finished thingy #{self.class.to_s}[#{id}]/job[#{self.jid}]"
+    end
+  end
+end
+
+class DoIt
+  def self.start
+    Redis.new.flushdb
+    puts "Creating 20 alphas and 5 bravos"
+
+    40.times do |t|
+      MyWorkers::WorkerAlpha.perform_async(t)
+    end
+    5.times do |t|
+      MyWorkers::WorkerBravo.perform_async(t)
+    end
+
+    puts "client done!"
   end
 end
